@@ -48,18 +48,25 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       return out;
     }catch(e){return [];}
   }
+  function fomoLeft(){var e=new Date();e.setHours(24,0,0,0);var ms=Math.max(0,e-Date.now());return Math.floor(ms/3600000)+'h '+Math.floor((ms%3600000)/60000)+'m';}
   function render(){
     var st=JSON.parse(localStorage.getItem('fc_streak')||'{}');
     var sc=st.count||0;
     var ready=!st.shieldLast||((new Date(dayKey(0))-new Date(st.shieldLast||0))/86400000)>=7;
     var all=done.length>=checks.length;
     var heat=weekHeat();
+    var fullDays=heat.filter(function(h){return h.full;}).length;
+    var fundName=localStorage.getItem('fc_fund')||'';
+    var pct=Math.round(done.length/checks.length*100);
     root.innerHTML='<div class="card" style="font-size:12px;color:#67e8f9">체크리스트 = 학습용. 투자 권유 아님 · 투명 금융</div>'
-      +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">완료 '+done.length+'/'+checks.length+(all?' ✓':'')+'</span></div>'
+      +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">완료 '+done.length+'/'+checks.length+(all?' ✓':'')+'</span> <span class="chip">7일 만점 '+fullDays+'</span> <span class="chip">창 '+fomoLeft()+'</span>'
+      +'<div style="height:6px;background:#1c1826;border-radius:4px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:#67e8f9"></i></div></div>'
+      +'<div class="card"><label class="sub">관찰 대상 (로컬)</label><input id="fundName" placeholder="예: KODEX 200" value="'+fundName.replace(/"/g,'&quot;')+'"/></div>'
       +'<div class="card"><b>7일 히트맵</b><div class="row" style="margin-top:8px;gap:4px;flex-wrap:wrap">'
       +heat.map(function(h){return '<span class="chip" style="'+(h.full?'background:#166534;color:#bbf7d0':h.n>=3?'background:#3b2f10;color:#fde68a':'')+'">'+h.k+' '+h.n+'/'+checks.length+'</span>';}).join('')
       +'</div></div>'
       +'<div class="card" id="list"></div>'
+      +'<div class="row" style="gap:6px;margin:8px 0"><button class="sec" id="checkAll" style="flex:1">전부 체크</button><button class="sec" id="resetDay" style="flex:1">오늘 초기화</button></div>'
       +'<div class="card"><label class="sub">메모 (선택)</label><textarea id="note" rows="2" placeholder="이 펀드 관찰 한 줄…">'+(notes[dayKey(0)]||'').replace(/</g,'&lt;')+'</textarea>'
       +'<button class="sec" id="saveNote" style="margin-top:6px">메모 저장</button></div>'
       +(all?'<div id="sharePeak" style="margin:10px 0;padding:10px;border:1px solid #67e8f944;border-radius:12px;text-align:center"><p style="margin:0 0 6px;font-size:13px">✨ 전체 체크 완료 — 공유</p><button id="sharePeakBtn" style="padding:8px 14px;border:0;border-radius:10px;background:#1c1826;color:#ece8f1">📤 진행 공유</button></div>':'')
@@ -68,29 +75,37 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       +'<a style="color:#ece8f1;margin:0 6px" href="https://hosuman08-netizen.github.io/etf-flow/?utm_source=fund&utm_medium=pipe">📈 ETF Flow</a>'
       +'<a style="color:#ece8f1;margin:0 6px" href="https://hosuman08-netizen.github.io/budget-pulse/?utm_source=fund&utm_medium=pipe">💓 Budget</a>'
       +'<a style="color:#e0b552;margin:0 6px" href="https://hosuman08-netizen.github.io/legion-hub/?utm_source=fund&utm_medium=pipe">🎮 Arcade</a></div>'
-      +'<button id="shareProg" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#1c1826;color:#ece8f1">체크 진행 공유</button>'
-      +'<button id="resetDay" class="sec" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#1c1826;color:#ece8f1">오늘 체크 초기화</button>';
+      +'<button id="shareProg" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#1c1826;color:#ece8f1">체크 진행 공유</button>';
     var list=document.getElementById('list');
     list.innerHTML=checks.map(function(c,i){
       var on=done.indexOf(i)>=0;
       return '<label style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #2a2438;cursor:pointer"><input type="checkbox" data-i="'+i+'" '+(on?'checked':'')+'/> '+c+'</label>';
     }).join('');
+    document.getElementById('fundName').onchange=function(){
+      try{localStorage.setItem('fc_fund',document.getElementById('fundName').value||'');}catch(e){}
+    };
+    function applyDone(){
+      localStorage.setItem(K,JSON.stringify(done));
+      logWeek(done.length);
+      if(done.length>=checks.length) bumpStreak(false);
+      else if(done.length>=3){
+        var pk='fc_partial_'+dayKey(0);
+        if(!localStorage.getItem(pk)){localStorage.setItem(pk,'1'); bumpStreak(true);}
+      }
+      render();try{legionTrack('activate',{n:done.length})}catch(e){}
+      if(done.length>=checks.length){try{legionTrack('share_peak_shown',{all:1})}catch(e){} try{legionTrack('money_pipe_shown',{app:'fund'})}catch(e){}}
+    }
     list.querySelectorAll('input').forEach(function(inp){
       inp.onchange=function(){
         var i=+inp.getAttribute('data-i');
         if(inp.checked){if(done.indexOf(i)<0)done.push(i);}
         else done=done.filter(function(x){return x!==i;});
-        localStorage.setItem(K,JSON.stringify(done));
-        logWeek(done.length);
-        if(done.length>=checks.length) bumpStreak(false);
-        else if(done.length>=3){
-          var pk='fc_partial_'+dayKey(0);
-          if(!localStorage.getItem(pk)){localStorage.setItem(pk,'1'); bumpStreak(true);}
-        }
-        render();try{legionTrack('activate',{n:done.length})}catch(e){}
-        if(done.length>=checks.length){try{legionTrack('share_peak_shown',{all:1})}catch(e){} try{legionTrack('money_pipe_shown',{app:'fund'})}catch(e){}}
+        applyDone();
       };
     });
+    document.getElementById('checkAll').onclick=function(){
+      done=checks.map(function(_,i){return i;}); applyDone();
+    };
     document.getElementById('saveNote').onclick=function(){
       notes[dayKey(0)]=document.getElementById('note').value||'';
       localStorage.setItem(NK,JSON.stringify(notes));
@@ -103,7 +118,8 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
     };
     function doShare(){
       var note=notes[dayKey(0)]||'';
-      var text='Fund checklist '+done.length+'/'+checks.length+' · 학습용 · 투자권유 아님'+(note?' · '+note.slice(0,40):'')+'\n'+shareUrl();
+      var fn=localStorage.getItem('fc_fund')||'';
+      var text='Fund checklist '+(fn?fn+' ':'')+done.length+'/'+checks.length+' · 학습용 · 투자권유 아님'+(note?' · '+note.slice(0,40):'')+'\n'+shareUrl();
       if(navigator.share)navigator.share({text:text,url:shareUrl()}).catch(function(){});
       else if(navigator.clipboard)navigator.clipboard.writeText(text);
       try{legionTrack('share_peak',{})}catch(e){}
