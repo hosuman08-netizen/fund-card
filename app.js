@@ -5,7 +5,7 @@
   var done=JSON.parse(localStorage.getItem(K)||'[]');
   var root=document.getElementById('app');
   function render(){
-    root.innerHTML='<div class="card" style="font-size:12px;color:#67e8f9">체크리스트 = 학습용. 투자 권유 아님.</div><div class="card" id="list"></div><div class="card">완료 '+done.length+'/'+checks.length+'</div>';
+    root.innerHTML='<div class="card" style="font-size:12px;color:#67e8f9">체크리스트 = 학습용. 투자 권유 아님.</div><div class="card" id="list"></div><div class="card">완료 '+done.length+'/'+checks.length+(done.length>=checks.length?' ✓':'')+'</div>';
     var list=document.getElementById('list');
     list.innerHTML=checks.map(function(c,i){
       var on=done.indexOf(i)>=0;
