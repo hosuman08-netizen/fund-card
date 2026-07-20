@@ -1,3 +1,6 @@
+
+/* LEGION_WAVE_38_today_counter */
+try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw_p43_fund_dis_today_counter')||'{}');if(_o.d!==_dk)_o={d:_dk,n:0};_o.n=(_o.n||0)+1;localStorage.setItem('lw_p43_fund_dis_today_counter',JSON.stringify(_o));}catch(e){}
 (function(){
   var checks=['수수료 확인','벤치마크 비교','위험등급 확인','환매 조건','세금/계좌 유형','과거수익≠미래 고지 읽음'];
   var K='fc_v1';
