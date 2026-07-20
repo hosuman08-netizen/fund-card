@@ -56,15 +56,18 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
     var all=done.length>=checks.length;
     var heat=weekHeat();
     var fullDays=heat.filter(function(h){return h.full;}).length;
+    var partialDays=heat.filter(function(h){return h.n>=3;}).length;
+    var avgN=heat.reduce(function(a,h){return a+h.n;},0)/7;
+    var fullRate=Math.round(fullDays/7*100);
     var fundName=localStorage.getItem('fc_fund')||'';
     var pct=Math.round(done.length/checks.length*100);
     root.innerHTML='<div class="card" style="font-size:12px;color:#67e8f9">체크리스트 = 학습용. 투자 권유 아님 · 투명 금융</div>'
-      +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">완료 '+done.length+'/'+checks.length+(all?' ✓':'')+'</span> <span class="chip">7일 만점 '+fullDays+'</span> <span class="chip">창 '+fomoLeft()+'</span>'
+      +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">완료 '+done.length+'/'+checks.length+(all?' ✓':'')+'</span> <span class="chip">7일 만점 '+fullDays+'/7 ('+fullRate+'%)</span> <span class="chip">3+일 '+partialDays+'</span> <span class="chip">평균 '+(Math.round(avgN*10)/10)+'/'+checks.length+'</span> <span class="chip">창 '+fomoLeft()+'</span>'
       +'<div style="height:6px;background:#1c1826;border-radius:4px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:#67e8f9"></i></div></div>'
       +'<div class="card"><label class="sub">관찰 대상 (로컬)</label><input id="fundName" placeholder="예: KODEX 200" value="'+fundName.replace(/"/g,'&quot;')+'"/></div>'
       +'<div class="card"><b>7일 히트맵</b><div class="row" style="margin-top:8px;gap:4px;flex-wrap:wrap">'
       +heat.map(function(h){return '<span class="chip" style="'+(h.full?'background:#166534;color:#bbf7d0':h.n>=3?'background:#3b2f10;color:#fde68a':'')+'">'+h.k+' '+h.n+'/'+checks.length+'</span>';}).join('')
-      +'</div></div>'
+      +'</div><p class="sub" style="margin-top:6px">완주율 '+fullRate+'% · 목표: 주 5일 만점</p></div>'
       +'<div class="card" id="list"></div>'
       +'<div class="row" style="gap:6px;margin:8px 0"><button class="sec" id="checkAll" style="flex:1">전부 체크</button><button class="sec" id="resetDay" style="flex:1">오늘 초기화</button></div>'
       +'<div class="card"><label class="sub">메모 (선택)</label><textarea id="note" rows="2" placeholder="이 펀드 관찰 한 줄…">'+(notes[dayKey(0)]||'').replace(/</g,'&lt;')+'</textarea>'
