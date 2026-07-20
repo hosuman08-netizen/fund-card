@@ -1,0 +1,8 @@
+{
+  "name": "Fund Card",
+  "short_name": "Fund Card",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b0a10",
+  "theme_color": "#e0b552"
+}
