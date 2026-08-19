@@ -68,9 +68,22 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       return '공유 확인 · 시각 미기록 · 수익률/AUM 칸 없음';
     }catch(e){return '';}
   }
+  function clearShareStampOkLine(){
+    return '지움 확인 · 공유 전 · 수익률 칸 없음';
+  }
+  function stampCleared(){
+    try{return localStorage.getItem('fc_stamp_cleared')==='1';}catch(e){return false;}
+  }
+  function stampOkInner(){
+    var s=shareStampOkLine();
+    if(s) return s;
+    if(stampCleared()) return '<span id="clearShareStampOk">'+clearShareStampOkLine()+'</span>';
+    return '공유 전 · 수익률 칸 없음';
+  }
   function clearShareStamp(){
     try{localStorage.removeItem('fc_stamp_shared');}catch(e){}
-    return shareStampOkLine()||'공유 전 · 수익률 칸 없음';
+    try{localStorage.setItem('fc_stamp_cleared','1');}catch(e){}
+    return clearShareStampOkLine();
   }
   function feeSimple10(erPct, prin){
     var p=parseFloat(String(prin||'').replace(/,/g,''));
@@ -172,7 +185,7 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       +'<div class="row" style="margin-top:6px;align-items:center"><p class="sub" id="srcStamp" style="margin:0;color:#fde68a;flex:1">'+srcStampLine(card0)+'</p>'
       +'<button class="sec" id="copyStamp">스탬프 복사</button>'
       +'<button class="sec" id="shareStamp">스탬프 공유</button></div>'
-      +'<div class="row" style="margin-top:4px;align-items:center"><p class="sub" id="shareStampOk" style="margin:0;color:#67e8f9;flex:1">'+(shareStampOkLine()||'공유 전 · 수익률 칸 없음')+'</p>'
+      +'<div class="row" style="margin-top:4px;align-items:center"><p class="sub" id="shareStampOk" style="margin:0;color:#67e8f9;flex:1">'+stampOkInner()+'</p>'
       +'<button class="sec" id="clearShareStamp">시각 지우기</button></div>'
       +'<p class="sub" style="margin-top:4px">원문은 발행사·DART·EDGAR. 이 앱은 파일을 올리지 않음 · 수익률 칸 없음 · 공유=스탬프 1줄</p></div>'
       +'<p class="fs-foot">원금손실은 투자자에게 귀속됩니다. 과거의 운용실적이 미래의 수익을 보장하지 않습니다. NFA.</p></div>'
@@ -295,6 +308,7 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
         function doneShare(){
           ss.textContent='공유됨 ✓';
           try{localStorage.setItem('fc_stamp_shared',new Date().toISOString());}catch(e){}
+          try{localStorage.removeItem('fc_stamp_cleared');}catch(e){}
           var ok=document.getElementById('shareStampOk');
           if(ok) ok.textContent=shareStampOkLine();
           setTimeout(function(){ss.textContent='스탬프 공유';},1100);
@@ -311,8 +325,9 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       };
       var cl=document.getElementById('clearShareStamp');
       if(cl) cl.onclick=function(){
+        var line=clearShareStamp();
         var ok=document.getElementById('shareStampOk');
-        if(ok) ok.textContent=clearShareStamp();
+        if(ok) ok.innerHTML='<span id="clearShareStampOk">'+line+'</span>';
         cl.textContent='지움 ✓';
         setTimeout(function(){ var b=document.getElementById('clearShareStamp'); if(b) b.textContent='시각 지우기'; },1100);
         try{legionTrack('clear_share_stamp',{})}catch(e){}
