@@ -32,6 +32,15 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
     if(!isFinite(n)||n<0||n>10) return null;
     return n;
   }
+  function isHttpUrl(s){
+    s=String(s||'').trim();
+    if(!s) return null;
+    try{
+      var u=new URL(s);
+      if(u.protocol!=='http:' && u.protocol!=='https:') return null;
+      return u.href;
+    }catch(e){return null;}
+  }
   function feeSimple10(erPct, prin){
     var p=parseFloat(String(prin||'').replace(/,/g,''));
     if(erPct==null||!isFinite(p)||p<=0) return null;
@@ -125,6 +134,11 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       +'<p class="sub" id="feeLine" style="margin-top:6px;color:#fde68a">'+feeLine+'</p>'
       +'<label class="sub">위험등급 (공시 1–6 · 추정 금지)</label><select id="priRisk">'+rgOpts+'</select>'
       +'<div style="margin-top:8px"><b style="font-size:12px;color:#67e8f9">핵심위험 4</b>'+riskHtml+'</div>'
+      +'<div id="docRow" style="margin-top:10px"><label class="sub">설명서 URL (붙여넣기 · 호스팅 없음)</label>'
+      +'<input id="docUrl" placeholder="https:// · DART/EDGAR/발행사 PDF" value="'+escAttr(card0.doc||'')+'"/>'
+      +'<div class="row" style="margin-top:6px"><button class="sec" id="openDoc" style="flex:1">설명서 열기</button>'
+      +'<span class="chip'+(isHttpUrl(card0.doc)?'':' warn')+'" id="docChip">'+(isHttpUrl(card0.doc)?'링크 있음':'미확인')+'</span></div>'
+      +'<p class="sub" style="margin-top:4px">원문은 발행사·DART·EDGAR. 이 앱은 파일을 올리지 않음 · 수익률 칸 없음</p></div>'
       +'<p class="fs-foot">원금손실은 투자자에게 귀속됩니다. 과거의 운용실적이 미래의 수익을 보장하지 않습니다. NFA.</p></div>'
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">완료 '+done.length+'/'+checks.length+(all?' ✓':'')+'</span> <span class="chip">7일 만점 '+fullDays+'/7 ('+fullRate+'%)</span> <span class="chip">3+일 '+partialDays+'</span> <span class="chip">평균 '+(Math.round(avgN*10)/10)+'/'+checks.length+'</span> <span class="chip">창 '+fomoLeft()+'</span>'
       +'<div style="height:6px;background:#1c1826;border-radius:4px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:#67e8f9"></i></div></div>'
@@ -202,6 +216,24 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
           try{localStorage.setItem(RK,JSON.stringify(r));}catch(e){}
         };
       });
+      var du=document.getElementById('docUrl');
+      function syncDoc(){
+        var c=loadCard();
+        var v=du?(du.value||'').trim():'';
+        c.doc=v;
+        try{localStorage.setItem(CK,JSON.stringify(c));}catch(e){}
+        var chip=document.getElementById('docChip');
+        var ok=!!isHttpUrl(v);
+        if(chip){ chip.textContent=ok?'링크 있음':'미확인'; chip.className='chip'+(ok?'':' warn'); }
+      }
+      if(du) du.oninput=syncDoc;
+      var od=document.getElementById('openDoc');
+      if(od) od.onclick=function(){
+        var href=isHttpUrl(du?du.value:'');
+        if(!href){ od.textContent='http(s)만'; setTimeout(function(){od.textContent='설명서 열기';},1200); return; }
+        window.open(href,'_blank','noopener,noreferrer');
+        try{legionTrack('open_doc',{})}catch(e){}
+      };
     })();
     (function bindFactsheet(){
       var fs=document.getElementById('fsGrid'); if(!fs) return;
