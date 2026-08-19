@@ -68,6 +68,10 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       return '공유 확인 · 시각 미기록 · 수익률/AUM 칸 없음';
     }catch(e){return '';}
   }
+  function clearShareStamp(){
+    try{localStorage.removeItem('fc_stamp_shared');}catch(e){}
+    return shareStampOkLine()||'공유 전 · 수익률 칸 없음';
+  }
   function feeSimple10(erPct, prin){
     var p=parseFloat(String(prin||'').replace(/,/g,''));
     if(erPct==null||!isFinite(p)||p<=0) return null;
@@ -168,7 +172,8 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       +'<div class="row" style="margin-top:6px;align-items:center"><p class="sub" id="srcStamp" style="margin:0;color:#fde68a;flex:1">'+srcStampLine(card0)+'</p>'
       +'<button class="sec" id="copyStamp">스탬프 복사</button>'
       +'<button class="sec" id="shareStamp">스탬프 공유</button></div>'
-      +'<p class="sub" id="shareStampOk" style="margin-top:4px;color:#67e8f9">'+(shareStampOkLine()||'공유 전 · 수익률 칸 없음')+'</p>'
+      +'<div class="row" style="margin-top:4px;align-items:center"><p class="sub" id="shareStampOk" style="margin:0;color:#67e8f9;flex:1">'+(shareStampOkLine()||'공유 전 · 수익률 칸 없음')+'</p>'
+      +'<button class="sec" id="clearShareStamp">시각 지우기</button></div>'
       +'<p class="sub" style="margin-top:4px">원문은 발행사·DART·EDGAR. 이 앱은 파일을 올리지 않음 · 수익률 칸 없음 · 공유=스탬프 1줄</p></div>'
       +'<p class="fs-foot">원금손실은 투자자에게 귀속됩니다. 과거의 운용실적이 미래의 수익을 보장하지 않습니다. NFA.</p></div>'
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">완료 '+done.length+'/'+checks.length+(all?' ✓':'')+'</span> <span class="chip">7일 만점 '+fullDays+'/7 ('+fullRate+'%)</span> <span class="chip">3+일 '+partialDays+'</span> <span class="chip">평균 '+(Math.round(avgN*10)/10)+'/'+checks.length+'</span> <span class="chip">창 '+fomoLeft()+'</span>'
@@ -303,6 +308,14 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
         if(navigator.share){
           navigator.share({text:line}).then(doneShare).catch(fall);
         }else fall();
+      };
+      var cl=document.getElementById('clearShareStamp');
+      if(cl) cl.onclick=function(){
+        var ok=document.getElementById('shareStampOk');
+        if(ok) ok.textContent=clearShareStamp();
+        cl.textContent='지움 ✓';
+        setTimeout(function(){ var b=document.getElementById('clearShareStamp'); if(b) b.textContent='시각 지우기'; },1100);
+        try{legionTrack('clear_share_stamp',{})}catch(e){}
       };
     })();
     (function bindFactsheet(){
