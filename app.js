@@ -58,7 +58,14 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
     try{
       var t=localStorage.getItem('fc_stamp_shared');
       if(!t) return '';
-      return '공유 확인 · 스탬프 1줄 · 수익률/AUM 칸 없음';
+      t=String(t);
+      var d=new Date(t);
+      if(!isNaN(d.getTime()) && /T/.test(t)){
+        var hh=String(d.getHours()).padStart(2,'0');
+        var mm=String(d.getMinutes()).padStart(2,'0');
+        return '공유 '+hh+':'+mm+' · 스탬프 1줄 · 수익률/AUM 칸 없음';
+      }
+      return '공유 확인 · 시각 미기록 · 수익률/AUM 칸 없음';
     }catch(e){return '';}
   }
   function feeSimple10(erPct, prin){
@@ -282,7 +289,7 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
         var line=stampShareText(loadCard());
         function doneShare(){
           ss.textContent='공유됨 ✓';
-          try{localStorage.setItem('fc_stamp_shared',dayKey(0));}catch(e){}
+          try{localStorage.setItem('fc_stamp_shared',new Date().toISOString());}catch(e){}
           var ok=document.getElementById('shareStampOk');
           if(ok) ok.textContent=shareStampOkLine();
           setTimeout(function(){ss.textContent='스탬프 공유';},1100);
