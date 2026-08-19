@@ -71,18 +71,35 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
   function clearShareStampOkLine(){
     return '지움 확인 · 공유 전 · 수익률 칸 없음';
   }
+  var CLEAR_SHARE_STAMP_OK_HIDE_MS=3000;
+  var clearShareStampOkHideTimer=null;
+  var clearShareStampOkHidden=false;
+  function clearShareStampOkHideMs(){ return CLEAR_SHARE_STAMP_OK_HIDE_MS; }
+  function hideClearShareStampOk(){
+    clearShareStampOkHidden=true;
+    clearShareStampOkHideTimer=null;
+    var ok=document.getElementById('shareStampOk');
+    if(ok) ok.textContent='공유 전 · 수익률 칸 없음';
+    return true;
+  }
+  function armClearShareStampOkHide(){
+    if(clearShareStampOkHideTimer){ clearTimeout(clearShareStampOkHideTimer); clearShareStampOkHideTimer=null; }
+    clearShareStampOkHidden=false;
+    clearShareStampOkHideTimer=setTimeout(hideClearShareStampOk, CLEAR_SHARE_STAMP_OK_HIDE_MS);
+  }
   function stampCleared(){
     try{return localStorage.getItem('fc_stamp_cleared')==='1';}catch(e){return false;}
   }
   function stampOkInner(){
     var s=shareStampOkLine();
     if(s) return s;
-    if(stampCleared()) return '<span id="clearShareStampOk">'+clearShareStampOkLine()+'</span>';
+    if(stampCleared() && !clearShareStampOkHidden) return '<span id="clearShareStampOk">'+clearShareStampOkLine()+'</span>';
     return '공유 전 · 수익률 칸 없음';
   }
   function clearShareStamp(){
     try{localStorage.removeItem('fc_stamp_shared');}catch(e){}
     try{localStorage.setItem('fc_stamp_cleared','1');}catch(e){}
+    clearShareStampOkHidden=false;
     return clearShareStampOkLine();
   }
   function feeSimple10(erPct, prin){
@@ -309,6 +326,8 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
           ss.textContent='공유됨 ✓';
           try{localStorage.setItem('fc_stamp_shared',new Date().toISOString());}catch(e){}
           try{localStorage.removeItem('fc_stamp_cleared');}catch(e){}
+          if(clearShareStampOkHideTimer){ clearTimeout(clearShareStampOkHideTimer); clearShareStampOkHideTimer=null; }
+          clearShareStampOkHidden=false;
           var ok=document.getElementById('shareStampOk');
           if(ok) ok.textContent=shareStampOkLine();
           setTimeout(function(){ss.textContent='스탬프 공유';},1100);
@@ -328,6 +347,7 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
         var line=clearShareStamp();
         var ok=document.getElementById('shareStampOk');
         if(ok) ok.innerHTML='<span id="clearShareStampOk">'+line+'</span>';
+        armClearShareStampOkHide();
         cl.textContent='지움 ✓';
         setTimeout(function(){ var b=document.getElementById('clearShareStamp'); if(b) b.textContent='시각 지우기'; },1100);
         try{legionTrack('clear_share_stamp',{})}catch(e){}
