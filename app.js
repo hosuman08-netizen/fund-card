@@ -41,6 +41,14 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       return u.href;
     }catch(e){return null;}
   }
+  function srcStampLine(card){
+    var href=isHttpUrl(card&&card.doc);
+    if(!href) return '출처 미확인 · URL 없음 · 수익률/AUM 칸 없음';
+    var host='';
+    try{host=new URL(href).hostname;}catch(e){return '출처 미확인 · URL 없음 · 수익률/AUM 칸 없음';}
+    var at=(card&&card.docAt)?String(card.docAt):'미확인';
+    return '출처 '+host+' · 저장 '+at+' · 사용자 붙여넣기 · 공시 대행 아님';
+  }
   function feeSimple10(erPct, prin){
     var p=parseFloat(String(prin||'').replace(/,/g,''));
     if(erPct==null||!isFinite(p)||p<=0) return null;
@@ -138,6 +146,7 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       +'<input id="docUrl" placeholder="https:// · DART/EDGAR/발행사 PDF" value="'+escAttr(card0.doc||'')+'"/>'
       +'<div class="row" style="margin-top:6px"><button class="sec" id="openDoc" style="flex:1">설명서 열기</button>'
       +'<span class="chip'+(isHttpUrl(card0.doc)?'':' warn')+'" id="docChip">'+(isHttpUrl(card0.doc)?'링크 있음':'미확인')+'</span></div>'
+      +'<p class="sub" id="srcStamp" style="margin-top:6px;color:#fde68a">'+srcStampLine(card0)+'</p>'
       +'<p class="sub" style="margin-top:4px">원문은 발행사·DART·EDGAR. 이 앱은 파일을 올리지 않음 · 수익률 칸 없음</p></div>'
       +'<p class="fs-foot">원금손실은 투자자에게 귀속됩니다. 과거의 운용실적이 미래의 수익을 보장하지 않습니다. NFA.</p></div>'
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">완료 '+done.length+'/'+checks.length+(all?' ✓':'')+'</span> <span class="chip">7일 만점 '+fullDays+'/7 ('+fullRate+'%)</span> <span class="chip">3+일 '+partialDays+'</span> <span class="chip">평균 '+(Math.round(avgN*10)/10)+'/'+checks.length+'</span> <span class="chip">창 '+fomoLeft()+'</span>'
@@ -221,10 +230,17 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
         var c=loadCard();
         var v=du?(du.value||'').trim():'';
         c.doc=v;
+        var ok=isHttpUrl(v);
+        if(ok){
+          if(c.docPrev!==v){ c.docAt=dayKey(0); c.docPrev=v; }
+        }else{
+          c.docAt=''; c.docPrev='';
+        }
         try{localStorage.setItem(CK,JSON.stringify(c));}catch(e){}
         var chip=document.getElementById('docChip');
-        var ok=!!isHttpUrl(v);
         if(chip){ chip.textContent=ok?'링크 있음':'미확인'; chip.className='chip'+(ok?'':' warn'); }
+        var st=document.getElementById('srcStamp');
+        if(st) st.textContent=srcStampLine(c);
       }
       if(du) du.oninput=syncDoc;
       var od=document.getElementById('openDoc');
