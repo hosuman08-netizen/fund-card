@@ -49,6 +49,11 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
     var at=(card&&card.docAt)?String(card.docAt):'미확인';
     return '출처 '+host+' · 저장 '+at+' · 사용자 붙여넣기 · 공시 대행 아님';
   }
+  function stampShareText(card){
+    var line=srcStampLine(card);
+    if(String(line).indexOf('\n')>=0) line=String(line).split('\n')[0];
+    return line;
+  }
   function feeSimple10(erPct, prin){
     var p=parseFloat(String(prin||'').replace(/,/g,''));
     if(erPct==null||!isFinite(p)||p<=0) return null;
@@ -147,8 +152,9 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       +'<div class="row" style="margin-top:6px"><button class="sec" id="openDoc" style="flex:1">설명서 열기</button>'
       +'<span class="chip'+(isHttpUrl(card0.doc)?'':' warn')+'" id="docChip">'+(isHttpUrl(card0.doc)?'링크 있음':'미확인')+'</span></div>'
       +'<div class="row" style="margin-top:6px;align-items:center"><p class="sub" id="srcStamp" style="margin:0;color:#fde68a;flex:1">'+srcStampLine(card0)+'</p>'
-      +'<button class="sec" id="copyStamp">스탬프 복사</button></div>'
-      +'<p class="sub" style="margin-top:4px">원문은 발행사·DART·EDGAR. 이 앱은 파일을 올리지 않음 · 수익률 칸 없음</p></div>'
+      +'<button class="sec" id="copyStamp">스탬프 복사</button>'
+      +'<button class="sec" id="shareStamp">스탬프 공유</button></div>'
+      +'<p class="sub" style="margin-top:4px">원문은 발행사·DART·EDGAR. 이 앱은 파일을 올리지 않음 · 수익률 칸 없음 · 공유=스탬프 1줄</p></div>'
       +'<p class="fs-foot">원금손실은 투자자에게 귀속됩니다. 과거의 운용실적이 미래의 수익을 보장하지 않습니다. NFA.</p></div>'
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">완료 '+done.length+'/'+checks.length+(all?' ✓':'')+'</span> <span class="chip">7일 만점 '+fullDays+'/7 ('+fullRate+'%)</span> <span class="chip">3+일 '+partialDays+'</span> <span class="chip">평균 '+(Math.round(avgN*10)/10)+'/'+checks.length+'</span> <span class="chip">창 '+fomoLeft()+'</span>'
       +'<div style="height:6px;background:#1c1826;border-radius:4px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:#67e8f9"></i></div></div>'
@@ -262,6 +268,23 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
         if(navigator.clipboard&&navigator.clipboard.writeText){
           navigator.clipboard.writeText(line).then(done).catch(function(){ window.prompt('아래를 복사하세요',line); done(); });
         }else{ window.prompt('아래를 복사하세요',line); done(); }
+      };
+      var ss=document.getElementById('shareStamp');
+      if(ss) ss.onclick=function(){
+        var line=stampShareText(loadCard());
+        function doneShare(){
+          ss.textContent='공유됨 ✓';
+          setTimeout(function(){ss.textContent='스탬프 공유';},1100);
+          try{legionTrack('share_stamp',{n:1})}catch(e){}
+        }
+        function fall(){
+          if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(line).then(doneShare).catch(function(){ window.prompt('아래 1줄을 공유하세요',line); doneShare(); });
+          }else{ window.prompt('아래 1줄을 공유하세요',line); doneShare(); }
+        }
+        if(navigator.share){
+          navigator.share({text:line}).then(doneShare).catch(fall);
+        }else fall();
       };
     })();
     (function bindFactsheet(){
