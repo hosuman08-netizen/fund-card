@@ -98,6 +98,11 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
     var prin0=''; try{prin0=localStorage.getItem(PK)||'';}catch(e){}
     var erPct=parseErPct(card0.er);
     var feeN=feeSimple10(erPct,prin0);
+    var berPct=parseErPct(card0.ber);
+    var erDiff=(erPct!=null&&berPct!=null)?Math.round((erPct-berPct)*1000)/1000:null;
+    var cmpLine=(erPct==null||berPct==null)
+      ?'ER 비교 미확인 · 벤치 ER은 공시에서 옮김 · 업계평균 날조 없음'
+      :'내 ER '+erPct+'% · 벤치 '+berPct+'% · 차 '+(erDiff>0?'+':'')+erDiff+'%p · 유저입력만';
     var feeLine=erPct==null?'수수료 미확인 · 공시 원문에서 총보수를 옮기세요'
       :(feeN==null?'총보수 '+erPct+'% · 원금 입력 시 10년 단순합 · 시장수익 가정 없음'
         :'총보수 '+erPct+'% · 10년 단순합 약 '+feeN.toLocaleString()+'원 · 시장수익 가정 없음 · 복리 아님');
@@ -114,7 +119,9 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       +'<div class="card" id="firstPri"><div class="row" style="justify-content:space-between;align-items:baseline"><b>우선 · 수수료 + 핵심위험</b><span class="chip'+(erPct&&riskN===4?'':' warn')+'">'+(erPct?'ER '+erPct+'%':'ER 미확인')+' · 위험 '+riskN+'/4</span></div>'
       +'<p class="sub">첫 화면 = 총보수와 핵심위험 4. 빈 칸=미확인. 수익률·AUM 날조 금지.</p>'
       +'<div class="pri-er"><label class="sub">총보수 ER(%)<input id="priEr" placeholder="예: 0.45" value="'+escAttr(card0.er||'')+'"/></label>'
-      +'<label class="sub">원금(선택·단순합)<input id="priPrin" placeholder="숫자만, 수익가정 없음" value="'+escAttr(prin0)+'"/></label></div>'
+      +'<label class="sub">벤치 ER(%)<input id="priBench" placeholder="공시에서 옮김" value="'+escAttr(card0.ber||'')+'"/></label></div>'
+      +'<label class="sub">원금(선택·단순합)<input id="priPrin" placeholder="숫자만, 수익가정 없음" value="'+escAttr(prin0)+'"/></label>'
+      +'<p class="sub" id="erCmp" style="margin-top:6px">'+cmpLine+'</p>'
       +'<p class="sub" id="feeLine" style="margin-top:6px;color:#fde68a">'+feeLine+'</p>'
       +'<label class="sub">위험등급 (공시 1–6 · 추정 금지)</label><select id="priRisk">'+rgOpts+'</select>'
       +'<div style="margin-top:8px"><b style="font-size:12px;color:#67e8f9">핵심위험 4</b>'+riskHtml+'</div>'
@@ -156,6 +163,12 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
         var prin=document.getElementById('priPrin'); var pv=prin?(prin.value||'').trim():'';
         try{localStorage.setItem(PK,pv);}catch(e){}
         var erPct=parseErPct(c.er);
+        var berPct=parseErPct(c.ber);
+        var erDiff=(erPct!=null&&berPct!=null)?Math.round((erPct-berPct)*1000)/1000:null;
+        var cmp=document.getElementById('erCmp');
+        if(cmp) cmp.textContent=(erPct==null||berPct==null)
+          ?'ER 비교 미확인 · 벤치 ER은 공시에서 옮김 · 업계평균 날조 없음'
+          :'내 ER '+erPct+'% · 벤치 '+berPct+'% · 차 '+(erDiff>0?'+':'')+erDiff+'%p · 유저입력만';
         var feeN=feeSimple10(erPct,pv);
         var el=document.getElementById('feeLine');
         if(el) el.textContent=erPct==null?'수수료 미확인 · 공시 원문에서 총보수를 옮기세요'
@@ -167,6 +180,12 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
         var c=loadCard(); c.er=(pe.value||'').trim();
         try{localStorage.setItem(CK,JSON.stringify(c));}catch(e){}
         var fs=document.querySelector('input[data-cf="er"]'); if(fs){ fs.value=c.er; fs.dispatchEvent(new Event('input')); }
+        syncFee();
+      };
+      var pb=document.getElementById('priBench');
+      if(pb) pb.oninput=function(){
+        var c=loadCard(); c.ber=(pb.value||'').trim();
+        try{localStorage.setItem(CK,JSON.stringify(c));}catch(e){}
         syncFee();
       };
       var pp=document.getElementById('priPrin');
