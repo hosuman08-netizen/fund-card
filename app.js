@@ -250,7 +250,7 @@ try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw
       +'<div style="color:#67e8f9;font-weight:700;margin-bottom:6px">💎 투명 금융 크로스</div>'
       +'<a style="color:#ece8f1;margin:0 6px" href="https://hosuman08-netizen.github.io/etf-flow/?utm_source=fund&utm_medium=pipe">📈 ETF Flow</a>'
       +'<a style="color:#ece8f1;margin:0 6px" href="https://hosuman08-netizen.github.io/budget-pulse/?utm_source=fund&utm_medium=pipe">💓 Budget</a>'
-      +'<a style="color:#e0b552;margin:0 6px" href="https://hosuman08-netizen.github.io/legion-hub/?utm_source=fund&utm_medium=pipe">🎮 Arcade</a></div>'
+      +'</div>'
       +'<button id="undoCheck" class="sec" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#1c1826;color:#ece8f1">↩ 직전 체크 취소</button>'+'<button id="shareProg" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:10px;background:#1c1826;color:#ece8f1">체크 진행 공유</button>';
     var list=document.getElementById('list');
     list.innerHTML=checks.map(function(c,i){
